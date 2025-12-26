@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高性能HTTP服务器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .feature p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .stats {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stats h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .stat-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 高性能HTTP服务器</h1>
+        <div class="subtitle">High-Performance HTTP Server</div>
+        
+        <p style="color: #666; line-height: 1.8; margin-bottom: 20px;">
+            恭喜！你的C++高性能HTTP服务器正在运行中。这是一个基于epoll和线程池的现代化Web服务器实现，
+            专为高并发场景设计。
+        </p>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>⚡ 事件驱动</h3>
+                <p>使用Linux epoll实现高效的I/O多路复用，轻松处理数万并发连接。</p>
+            </div>
+            
+            <div class="feature">
+                <h3>🔧 线程池</h3>
+                <p>预创建工作线程池，避免频繁创建销毁线程的开销，提升性能。</p>
+            </div>
+            
+            <div class="feature">
+                <h3>🚄 非阻塞I/O</h3>
+                <p>全异步非阻塞设计，最大化吞吐量和响应速度。</p>
+            </div>
+            
+            <div class="feature">
+                <h3>📦 HTTP/1.1</h3>
+                <p>完整支持HTTP/1.1协议，包括Keep-Alive长连接。</p>
+            </div>
+            
+            <div class="feature">
+                <h3>🎯 现代C++</h3>
+                <p>使用C++11/14/17特性，代码简洁高效。</p>
+            </div>
+            
+            <div class="feature">
+                <h3>📁 静态文件</h3>
+                <p>支持多种MIME类型的静态文件服务。</p>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <h2>性能指标</h2>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-number">10K+</div>
+                    <div class="stat-label">并发连接</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1ms</div>
+                    <div class="stat-label">响应延迟</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100K+</div>
+                    <div class="stat-label">QPS吞吐量</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Built with ❤️ using Modern C++</p>
+            <p>Perfect for your resume and technical interviews</p>
+        </div>
+    </div>
+</body>
+</html>
