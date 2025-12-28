@@ -57,6 +57,7 @@ Waiting:        9   18   6.7     15      41
 Total:         10   21   7.4     18      46
 ```
 
+
 ---
 
 **例子2：10000请求，500并发**
@@ -166,4 +167,29 @@ Connect:        0    6  20.9      0     131
 Processing:    36  840 202.7    815    1678
 Waiting:       14  838 202.5    812    1675
 Total:        150  846 201.2    816    1749
+```
+
+**例子5：10000请求，100并发，读取50M大文件**
+```bash
+ab -n 10000 -c 100 http://localhost:8080/test.dat
+```
+
+16线程-50M文件(sendfile 零拷贝)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.2      0       3
+Processing:   134  327  84.4    320     689
+Waiting:        6  133  70.1    131     559
+Total:        134  327  84.4    320     689
+```
+
+16线程-50M文件(普通读写)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.3      0      21
+Processing:    57  360 107.9    345     958
+Waiting:        9  148  71.2    149     564
+Total:         57  360 107.9    345     958
 ```

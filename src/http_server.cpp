@@ -368,18 +368,14 @@ void HttpServer::serveStaticFile(const std::string& path, HttpResponse& response
     response.setContentType(HttpResponse::getContentType(filepath));
     response.setSendFilePath(filepath, file_stat.st_size);
 
-    // 读取文件 -- 普通read/write
-    // std::string content = readFile(filepath);
-
-    // if(content.empty()){
-    //     response.setStatusCode(404);
-    //     response.setBody("<html><body<h1>404 Not Found</h1></body></html>");
-    //     response.setContentType("text/html");
-    // } else {
-    //     response.setStatusCode(200);
-    //     response.setBody(content);
-    //     response.setContentType(HttpResponse::getContentType(filepath));
-    // }
+#ifdef USE_SENDFILE
+    // 零拷贝方式
+    response.setSendFilePath(filepath, file_stat.st_size);
+#else
+    // 普通读写方式
+    std::string content = readFile(filepath);
+    response.setBody(content);
+#endif
 
 }
 
@@ -415,7 +411,7 @@ bool HttpServer::sendFileWithSendfile(int client_fd, const std::string& filepath
     ssize_t sent = 0;
     while(offset < file_size){
         sent = sendfile(client_fd, file_fd, &offset, file_size - offset);
-        // std::cout<< "sendfile: " << sent << std::endl;
+        std::cout<< "sendfile: " << sent << std::endl;
         if(sent < 0){
             if(errno == EAGAIN || errno == EWOULDBLOCK) {
                 //发送缓冲区满，等待后重试

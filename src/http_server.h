@@ -1,6 +1,8 @@
 #ifndef HTTP_SERVER_H
 #define HTTP_SERVER_H
 
+#define USE_SENDFILE
+
 #include "thread_pool.h"
 #include <string>
 #include <memory>
