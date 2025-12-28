@@ -27,34 +27,24 @@ ab -n 总请求数 -c 并发数 http://服务器地址/
 ab -n 1000 -c 100 http://localhost:8080/
 ```
 
-4线程结果：
+16线程结果(普通读写)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.4      0       2
-Processing:     9   30   8.3     28      62
-Waiting:        7   30   8.3     28      62
-Total:          9   30   8.6     28      64
-```
-
-16线程结果：
-```
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.6      0      52
-Processing:     2   14   6.6     13     136
-Waiting:        2   14   6.6     13     136
-Total:          4   14   6.6     13     136
+Connect:        0    1   1.7      0      11
+Processing:     2    9   1.8      9      17
+Waiting:        2    9   1.8      9      17
+Total:          6   10   2.5      9      20
 ```
 
 16线程结果(sendfile 零拷贝)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.5      0       2
-Processing:    10   21   7.1     18      44
-Waiting:        9   18   6.7     15      41
-Total:         10   21   7.4     18      46
+Connect:        0    0   0.8      0       4
+Processing:     2    8   1.7      8      13
+Waiting:        1    7   1.6      7      12
+Total:          4    9   1.6      9      14
 ```
 
 
@@ -65,34 +55,24 @@ Total:         10   21   7.4     18      46
 ab -n 10000 -c 500 http://localhost:8080/
 ```
 
-4线程结果：
+16线程结果(普通读写)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    1   1.7      0      13
-Processing:    15  103  21.7     99     257
-Waiting:        6  103  21.7     99     257
-Total:         19  103  21.8     99     263
-```
-
-16线程结果：
-```
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    1   1.4      0       9
-Processing:    15   75  18.0     73     196
-Waiting:        6   75  18.0     73     196
-Total:         16   75  18.2     73     199
+Connect:        0    1   3.0      0      26
+Processing:    14   42   5.5     42      73
+Waiting:        1   42   5.4     42      73
+Total:         28   43   5.8     42      76
 ```
 
 16线程结果(sendfile 零拷贝)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    1   1.9      0      12
-Processing:    10   79  23.0     77     216
-Waiting:        4   76  23.0     75     214
-Total:         19   80  23.7     78     226
+Connect:        0    1   2.2      0      17
+Processing:    12   39   3.5     39      56
+Waiting:        1   38   3.6     38      54
+Total:         21   39   3.1     39      58
 ```
 
 ---
@@ -102,94 +82,74 @@ Total:         19   80  23.7     78     226
 ab -t 60 -c 100 http://localhost:8080/
 ```
 
-4线程结果：
+16线程结果(普通读写)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.4      0      31
-Processing:     2   21  12.1     19     312
-Waiting:        2   21  12.0     19     312
-Total:          4   21  12.1     19     312
-```
-
-16线程结果：
-```
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.6      0      38
-Processing:     3   15   7.0     13     113
-Waiting:        3   15   6.9     13     112
-Total:          5   15   7.0     14     113
+Connect:        0    0   0.4      0      19
+Processing:     2    8   1.3      8      23
+Waiting:        2    8   1.3      8      23
+Total:          3    8   1.4      8      24
 ```
 
 16线程结果(sendfile 零拷贝)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.6      0      39
-Processing:     3   14   7.8     13     129
-Waiting:        2   12   6.8     11     103
-Total:          4   15   7.8     13     129
+Connect:        0    0   0.7      0       8
+Processing:     1    7   1.7      7      25
+Waiting:        0    6   1.6      6      21
+Total:          2    8   1.6      7      25
 ```
 
 ---
 
 **例子4：持续60秒，5000并发**
 ```bash
-ab -t 60 -c 5000 http://localhost:8080/
+ab -t 60 -n 99999 -c 5000 http://localhost:8080/
 ```
 
-4线程结果：
+16线程结果(普通读写)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0   11  35.6      0     171
-Processing:    64 1132 255.8   1112    1803
-Waiting:        5 1132 255.9   1112    1802
-Total:        177 1144 240.3   1115    1803
-```
-
-16线程结果：
-```
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0   10  30.0      0     152
-Processing:    63  790 175.5    797    1697
-Waiting:        6  790 175.5    797    1697
-Total:        158  800 170.6    812    1779
+Connect:        0    3  11.7      0     109
+Processing:    45  442  94.5    428     811
+Waiting:        0  442  94.6    428     811
+Total:        111  444  88.8    428     811
 ```
 
 16线程结果(sendfile 零拷贝)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    6  20.9      0     131
-Processing:    36  840 202.7    815    1678
-Waiting:       14  838 202.5    812    1675
-Total:        150  846 201.2    816    1749
+Connect:        0    3  11.6      0     103
+Processing:    69  409 102.5    392     848
+Waiting:        1  408 102.3    391     846
+Total:        125  412  98.5    392     849
 ```
 
-**例子5：10000请求，100并发，读取50M大文件**
+**例子5：10000请求，500并发，读取100M大文件**
 ```bash
-ab -n 10000 -c 100 http://localhost:8080/test.dat
+ab -t 60 -n 10000 -c 500 http://localhost:8080/test-100M.dat
 ```
 
-16线程-50M文件(sendfile 零拷贝)：
+16线程-100M文件(普通读写)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.2      0       3
-Processing:   134  327  84.4    320     689
-Waiting:        6  133  70.1    131     559
-Total:        134  327  84.4    320     689
+Connect:        0    5   2.1      4       9
+Processing:   222 31385 16487.3  31876   60084
+Waiting:      199 31125 16504.2  31589   59833
+Total:        222 31390 16485.2  31880   60086
 ```
 
-16线程-50M文件(普通读写)：
+16线程-100M文件(sendfile 零拷贝)：
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.3      0      21
-Processing:    57  360 107.9    345     958
-Waiting:        9  148  71.2    149     564
-Total:         57  360 107.9    345     958
+Connect:        0    2   6.5      0      41
+Processing:   183 4868 840.6   5055    5803
+Waiting:        1 4687 837.5   4875    5615
+Total:        223 4870 834.4   5055    5803
 ```

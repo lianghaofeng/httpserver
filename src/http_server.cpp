@@ -366,7 +366,6 @@ void HttpServer::serveStaticFile(const std::string& path, HttpResponse& response
     // 文件存在
     response.setStatusCode(200);
     response.setContentType(HttpResponse::getContentType(filepath));
-    response.setSendFilePath(filepath, file_stat.st_size);
 
 #ifdef USE_SENDFILE
     // 零拷贝方式
@@ -411,7 +410,7 @@ bool HttpServer::sendFileWithSendfile(int client_fd, const std::string& filepath
     ssize_t sent = 0;
     while(offset < file_size){
         sent = sendfile(client_fd, file_fd, &offset, file_size - offset);
-        std::cout<< "sendfile: " << sent << std::endl;
+        // std::cout<< "sendfile: " << sent << std::endl;
         if(sent < 0){
             if(errno == EAGAIN || errno == EWOULDBLOCK) {
                 //发送缓冲区满，等待后重试
