@@ -20,7 +20,8 @@ public:
     HttpResponse():
         status_code_(200),
         status_message_("OK"),
-        version_("HTTP/1.1"){
+        version_("HTTP/1.1"),
+        sendfile_size_ (0){
             setHeader("Server", "HPHS/1.0");
         }
 
@@ -61,6 +62,25 @@ public:
     }
 
     /**
+     * 设置使用sendfile发送的文件
+     */
+    void setSendFilePath(const std::string& path, size_t size){
+        sendfile_path_ = path;
+        sendfile_size_ = size;
+    }
+
+    /**
+     * 是否使用sendfile
+     */
+    bool useSendfile() const { return !sendfile_path_.empty();}
+
+    /**
+     * 获取sendfile路径
+     */
+    const std::string& getSendfilePath() const {return sendfile_path_;}
+    size_t getSendfileSize() const {return sendfile_size_;}
+
+    /**
      * 构建HTTP响应字符串
      * @return HTTP 响应
      */
@@ -83,7 +103,8 @@ private:
     std::string version_;
     std::unordered_map<std::string, std::string> headers_;
     std::string body_;
-
+    std::string sendfile_path_;
+    off_t sendfile_size_;
 };
 
 

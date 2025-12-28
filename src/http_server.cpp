@@ -6,10 +6,13 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <sys/sendfile.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fstream>
 #include <sstream>
+
 
 HttpServer::HttpServer(int port, int thread_count, const std::string& www_root):
     port_(port),
@@ -259,7 +262,29 @@ void HttpServer::handleClient(int client_fd) {
 
     response.setKeepAlive(request.keepAlive());
 
-    bool success = sendResponse(client_fd, response.build());
+    // bool success = sendResponse(client_fd, response.build());
+
+
+    bool success = false;
+
+    if(response.useSendfile()){
+        // 1. 先发送HTTP头，普通write
+        std::string headers_only = response.build();
+        success = sendResponse(client_fd, headers_only);
+
+        // 2. 再用sendfile发送文件内容
+        if(success) {
+            success = sendFileWithSendfile(
+                client_fd,
+                response.getSendfilePath(),
+                response.getSendfileSize()
+            );
+        }
+
+    } else {
+        // 普通发送
+        success = sendResponse(client_fd, response.build());
+    }
 
     if(!success || !request.keepAlive()){
         closeConnection(client_fd);
@@ -328,18 +353,33 @@ void HttpServer::serveStaticFile(const std::string& path, HttpResponse& response
         filepath += "index.html";
     }
 
-    // 读取文件
-    std::string content = readFile(filepath);
-
-    if(content.empty()){
+    // 获取文件信息
+    struct stat file_stat;
+    if(stat(filepath.c_str(), &file_stat) < 0){
+        //文件不存在
         response.setStatusCode(404);
         response.setBody("<html><body<h1>404 Not Found</h1></body></html>");
         response.setContentType("text/html");
-    } else {
-        response.setStatusCode(200);
-        response.setBody(content);
-        response.setContentType(HttpResponse::getContentType(filepath));
+        return;
     }
+
+    // 文件存在
+    response.setStatusCode(200);
+    response.setContentType(HttpResponse::getContentType(filepath));
+    response.setSendFilePath(filepath, file_stat.st_size);
+
+    // 读取文件 -- 普通read/write
+    // std::string content = readFile(filepath);
+
+    // if(content.empty()){
+    //     response.setStatusCode(404);
+    //     response.setBody("<html><body<h1>404 Not Found</h1></body></html>");
+    //     response.setContentType("text/html");
+    // } else {
+    //     response.setStatusCode(200);
+    //     response.setBody(content);
+    //     response.setContentType(HttpResponse::getContentType(filepath));
+    // }
 
 }
 
@@ -361,3 +401,42 @@ void HttpServer::closeConnection(int fd){
     close(fd);
     std::cout <<"Connection closed: fd = " << fd << std::endl;
 }
+
+bool HttpServer::sendFileWithSendfile(int client_fd, const std::string& filepath, off_t file_size) {
+    int file_fd = open(filepath.c_str(), O_RDONLY);
+    if(file_fd < 0){
+        std::cerr << "open() error: " <<  strerror(errno) << std::endl;
+        return false;
+    }
+
+    bool success = true;
+
+    off_t offset = 0;
+    ssize_t sent = 0;
+    while(offset < file_size){
+        sent = sendfile(client_fd, file_fd, &offset, file_size - offset);
+        // std::cout<< "sendfile: " << sent << std::endl;
+        if(sent < 0){
+            if(errno == EAGAIN || errno == EWOULDBLOCK) {
+                //发送缓冲区满，等待后重试
+                usleep(1000);
+                continue;
+            }
+            std::cerr << "sendfile() error: " << strerror(errno) << std::endl;
+            success = false;
+            break;
+        }
+
+        // 如果sent == 0，可能是文件结束或出错
+        if(sent == 0 && offset < file_size) {
+            std::cerr << "sendfile() returned 0 unexpectedly" << std::endl;
+            success = false;
+            break;
+        }
+    }
+
+    close(file_fd);
+    return success;
+
+}
+

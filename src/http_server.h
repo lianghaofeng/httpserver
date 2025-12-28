@@ -85,6 +85,16 @@ class HttpServer {
      */
     std::string readFile(const std::string& filepath);
 
+
+    /**
+     * 使用sendfile发送文件（零拷贝）
+     * @param client_fd
+     * @param filepath
+     * @param file_size
+     * @return if_sucess
+     */
+    bool sendFileWithSendfile(int client_fd, const std::string& filepath, off_t file_size);
+
     /**
      * close connection
      */

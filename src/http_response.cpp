@@ -12,7 +12,7 @@ std::string HttpResponse::build(){
     // 状态行： HTTP/1.1 200 OK
     oss << version_ << " " << status_code_ << " " << status_message_ << "\r\n";
 
-    if(!body_.empty()) {
+    if(!useSendfile() && !body_.empty()) {
         setHeader("Content-Length", std::to_string(body_.size()));
     }
 
@@ -23,8 +23,10 @@ std::string HttpResponse::build(){
 
     oss << "\r\n";
 
-    oss << body_;
-
+    if(!useSendfile()){
+        oss << body_;
+    }
+    
     return oss.str();
 
 }
