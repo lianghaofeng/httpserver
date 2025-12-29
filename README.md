@@ -47,6 +47,16 @@ Waiting:        1    7   1.6      7      12
 Total:          4    9   1.6      9      14
 ```
 
+16线程结果(sendfile 零拷贝 + work-stealing)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.7      0       4
+Processing:     2    9   3.7      9      21
+Waiting:        0    8   3.7      7      20
+Total:          2    9   3.6      9      21
+```
+
 
 ---
 
@@ -73,6 +83,16 @@ Connect:        0    1   2.2      0      17
 Processing:    12   39   3.5     39      56
 Waiting:        1   38   3.6     38      54
 Total:         21   39   3.1     39      58
+```
+
+16线程结果(sendfile 零拷贝 + work-stealing)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    1   3.1      0      22
+Processing:     9   39  10.2     38      71
+Waiting:        2   37  10.2     37      69
+Total:         12   40   9.9     39      71
 ```
 
 ---
@@ -102,6 +122,16 @@ Waiting:        0    6   1.6      6      21
 Total:          2    8   1.6      7      25
 ```
 
+16线程结果(sendfile 零拷贝 + work-stealing)
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.4      0      11
+Processing:     1    9  11.6      7     203
+Waiting:        0    8  10.6      6     195
+Total:          1    9  11.6      7     203
+```
+
 ---
 
 **例子4：持续60秒，5000并发**
@@ -129,8 +159,19 @@ Waiting:        1  408 102.3    391     846
 Total:        125  412  98.5    392     849
 ```
 
+16线程结果(sendfile 零拷贝 + work-stealing)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    4  14.0      0     118
+Processing:    47  467 201.6    404    1313
+Waiting:        1  465 201.2    403    1313
+Total:        142  471 197.9    405    1314
+```
+
 **例子5：10000请求，500并发，读取100M大文件**
 ```bash
+dd if=/dev/zero of=www/test-100M.dat bs=10M count=1
 ab -t 60 -n 10000 -c 500 http://localhost:8080/test-100M.dat
 ```
 
@@ -152,4 +193,14 @@ Connect:        0    2   6.5      0      41
 Processing:   183 4868 840.6   5055    5803
 Waiting:        1 4687 837.5   4875    5615
 Total:        223 4870 834.4   5055    5803
+```
+
+16线程结果(sendfile 零拷贝 + work-stealing)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    2   6.1      0      37
+Processing:   189 5090 989.4   5151    6905
+Waiting:        4 4902 982.0   4971    6730
+Total:        224 5092 984.0   5152    6906
 ```

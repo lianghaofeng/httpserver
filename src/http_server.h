@@ -1,9 +1,18 @@
 #ifndef HTTP_SERVER_H
 #define HTTP_SERVER_H
 
+// 控制是否使用sendfile零拷贝发送
 #define USE_SENDFILE
 
+// 控制是否使用work-stealing模式
+#define USE_WORK_STEALING
+
+#ifdef USE_WORK_STEALING
+#include "work_stealing_pool.h"
+#else
 #include "thread_pool.h"
+#endif
+
 #include <string>
 #include <memory>
 #include <atomic>
@@ -108,7 +117,12 @@ class HttpServer {
     int epoll_fd_;
     std::string www_root_;
     std::atomic<bool> running_;
+
+#ifdef USE_WORK_STEALING
+    std::unique_ptr<WorkStealingPool> pool_;
+#else
     std::unique_ptr<ThreadPool> pool_;
+#endif
 
     static const int MAX_EVENTS = 1024;
     static const int BUFFER_SIZE = 4096;

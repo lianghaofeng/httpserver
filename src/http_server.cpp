@@ -21,8 +21,12 @@ HttpServer::HttpServer(int port, int thread_count, const std::string& www_root):
     www_root_(www_root),
     running_(false),
     pool_(nullptr){
-        
+
+#ifdef USE_WORK_STEALING
+    pool_ = std::make_unique<WorkStealingPool>(thread_count);
+#else
     pool_ = std::make_unique<ThreadPool>(thread_count);
+#endif
 }
 
 HttpServer::~HttpServer(){
