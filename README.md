@@ -51,10 +51,10 @@ Total:          4    9   1.6      9      14
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.7      0       4
-Processing:     2    9   3.7      9      21
-Waiting:        0    8   3.7      7      20
-Total:          2    9   3.6      9      21
+Connect:        0    0   0.9      0       5
+Processing:     1    8   2.9      8      16
+Waiting:        0    7   2.9      6      15
+Total:          1    8   2.9      8      17
 ```
 
 
@@ -89,17 +89,17 @@ Total:         21   39   3.1     39      58
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    1   3.1      0      22
-Processing:     9   39  10.2     38      71
-Waiting:        2   37  10.2     37      69
-Total:         12   40   9.9     39      71
+Connect:        0    1   2.8      0      18
+Processing:     4   38  11.3     38      79
+Waiting:        1   37  11.3     37      78
+Total:          8   40  10.4     39      80
 ```
 
 ---
 
 **例子3：持续60秒，100并发**
 ```bash
-ab -t 60 -c 100 http://localhost:8080/
+ab -t 60 -n 100000 -c 100 http://localhost:8080/
 ```
 
 16线程结果(普通读写)：
@@ -126,11 +126,12 @@ Total:          2    8   1.6      7      25
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.4      0      11
-Processing:     1    9  11.6      7     203
-Waiting:        0    8  10.6      6     195
-Total:          1    9  11.6      7     203
+Connect:        0    0   0.7      0      43
+Processing:     1    9   9.2      7     167
+Waiting:        0    8   8.4      6     159
+Total:          1    9   9.3      7     167
 ```
+
 
 ---
 
@@ -163,10 +164,10 @@ Total:        125  412  98.5    392     849
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    4  14.0      0     118
-Processing:    47  467 201.6    404    1313
-Waiting:        1  465 201.2    403    1313
-Total:        142  471 197.9    405    1314
+Connect:        0    3  13.0      0      91
+Processing:    32  414 154.7    384    1149
+Waiting:        1  413 154.3    383    1145
+Total:        118  417 151.0    385    1149
 ```
 
 **例子5：10000请求，500并发，读取100M大文件**
@@ -199,8 +200,44 @@ Total:        223 4870 834.4   5055    5803
 ```
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    2   6.1      0      37
-Processing:   189 5090 989.4   5151    6905
-Waiting:        4 4902 982.0   4971    6730
-Total:        224 5092 984.0   5152    6906
+Connect:        0    1   3.7      0      25
+Processing:   179 5046 953.7   5053    6470
+Waiting:        2 4865 950.3   4879    6289
+Total:        203 5047 950.5   5053    6470
+```
+
+**例子6：持续60秒，10000并发**
+```bash
+ab -t 60 -n 999999 -c 10000 http://localhost:8080/
+```
+
+16线程结果(普通线程池)： 
+```
+运行中途崩溃
+```
+
+16线程结果(sendfile 零拷贝 + work-stealing)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   23 285.4      0    5148
+Processing:    80  864 287.7    792    1927
+Waiting:        1  863 287.3    791    1918
+Total:        180  888 399.2    794    5951
+```
+
+
+**例子6：持续60秒，10000并发**
+```bash
+ab -t 600 -n 9999999 -c 20000 http://localhost:8080/
+```
+
+16线程结果(sendfile 零拷贝 + work-stealing)：
+```
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0 5120 1534.0   5058   10438
+Processing:   348 7569 1720.9   7758   13094
+Waiting:        3 5661 1966.0   6047   10500
+Total:       4812 12689 1047.8  12569   15466
 ```

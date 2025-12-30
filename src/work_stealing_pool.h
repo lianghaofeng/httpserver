@@ -30,6 +30,8 @@ private:
     struct WorkQueue{
         std::deque<std::function<void()>> tasks;
         std::mutex mutex;
+        std::condition_variable cv;
+        std::atomic<size_t> as{0};
     };
 
     // 工作线程函数
