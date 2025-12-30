@@ -50,7 +50,13 @@ class HttpServer {
      * @param fd
      * @param enable_et
      */
-    bool addToEpoll(int fd, bool enable_et = true);
+    bool addToEpoll(int fd, bool enable_et = true, bool enable_oneshot = true);
+
+    /**
+     * 重新激活fd
+     * @param fd
+     */
+    bool resetOneShot(int fd);
 
     /**
      * remove fd

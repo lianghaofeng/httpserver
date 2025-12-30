@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include <fstream>
 #include <sstream>
+#include <netinet/tcp.h>
 
 
 HttpServer::HttpServer(int port, int thread_count, const std::string& www_root):
@@ -51,7 +52,7 @@ void HttpServer::start(){
     }
 
     // add socket to epoll
-    if(!addToEpoll(listen_fd_, true)){
+    if(!addToEpoll(listen_fd_, true, false)){
         std::cerr << "Failed to add listen socket to epoll"
             << std::endl;
         return;
@@ -72,8 +73,15 @@ void HttpServer::start(){
             if (errno == EINTR) {
                 continue;
             }
-            std::cerr<<"epoll_wait error: " << strerror(errno) <<std::endl;
-            break;
+
+            if(errno == ENOMEM || errno == EINVAL || errno == EBADF){
+                std::cerr<<"epoll_wait error: " << strerror(errno) <<std::endl;
+                break;
+            } else {
+                std::cerr<<"Temporary epoll_wait error: " << strerror(errno) <<std::endl;
+                usleep(10000);
+                continue;   
+            }
         }
 
         for (int i = 0; i < n; ++i) {
@@ -169,12 +177,16 @@ bool HttpServer::setNonBlocking(int fd) {
 
 }
 
-bool HttpServer::addToEpoll(int fd, bool enable_et) {
+bool HttpServer::addToEpoll(int fd, bool enable_et, bool enable_oneshot) {
     struct epoll_event ev;
     ev.events = EPOLLIN;
 
     if(enable_et) {
         ev.events |= EPOLLET; //边缘触发模式
+    }
+
+    if(enable_oneshot) {
+        ev.events |= EPOLLONESHOT; //边缘触发模式
     }
 
     ev.data.fd = fd;
@@ -186,6 +198,15 @@ bool HttpServer::addToEpoll(int fd, bool enable_et) {
 
     return true;
 }
+
+bool HttpServer::resetOneShot(int fd){
+    struct epoll_event ev;
+    ev.events = EPOLLIN | EPOLLET | EPOLLONESHOT;
+    ev.data.fd = fd;
+    return epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &ev) == 0;
+}
+
+
 
 void HttpServer::removeFromEpoll(int fd) {
     epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, nullptr);
@@ -218,7 +239,14 @@ void HttpServer::handleNewConnection(){
             continue;
         }
 
-        if(!addToEpoll(client_fd, true)){
+        //设置TCP_NODELAY
+        int flag = 1;
+        setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
+
+        int sndbuf = 1024 * 1024;
+        setsockopt(client_fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf));
+
+        if(!addToEpoll(client_fd, true, true)){
             close(client_fd);
             continue;
         }
@@ -268,7 +296,6 @@ void HttpServer::handleClient(int client_fd) {
 
     // bool success = sendResponse(client_fd, response.build());
 
-
     bool success = false;
 
     if(response.useSendfile()){
@@ -290,10 +317,11 @@ void HttpServer::handleClient(int client_fd) {
         success = sendResponse(client_fd, response.build());
     }
 
-    if(!success || !request.keepAlive()){
+    if(success && request.keepAlive()){
+        resetOneShot(client_fd);
+    } else {
         closeConnection(client_fd);
     }
-
 }
 
 ssize_t HttpServer::readRequest(int fd, std::string &buffer){
@@ -308,6 +336,12 @@ ssize_t HttpServer::readRequest(int fd, std::string &buffer){
                 // 数据已全部读取
                 break;
             }
+            
+            // 客户端断开连接，静默处理
+            if (errno == ECONNRESET) {
+                return -1;  // 不打印错误
+            }
+
             std::cerr<<"read() error: " << strerror(errno) <<std::endl;
             return -1;
         } else if (bytes == 0){
@@ -337,9 +371,14 @@ bool HttpServer::sendResponse(int fd, const std::string& response) {
         if(sent < 0){
             if(errno == EAGAIN || errno == EWOULDBLOCK){
                 // 缓冲区满，稍后重试
-                usleep(1000);
+                usleep(100);
                 continue;
             }
+
+            if(errno == EPIPE || errno == ECONNRESET){
+                return false;
+            }
+
             std::cerr<<"write() error: " << strerror(errno) << std::endl;
             return false;  
         }
@@ -421,6 +460,12 @@ bool HttpServer::sendFileWithSendfile(int client_fd, const std::string& filepath
                 usleep(1000);
                 continue;
             }
+
+            if(errno == EPIPE || errno == ECONNRESET){
+                success = false;
+                break;
+            }
+
             std::cerr << "sendfile() error: " << strerror(errno) << std::endl;
             success = false;
             break;

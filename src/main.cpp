@@ -16,6 +16,8 @@ void signalHandler(int signal){
 
 
 int main(int argc, char* argv[]){
+    signal(SIGPIPE, SIG_IGN);
+
     std::cout<<"HPHS v1.0"<<std::endl;
 
     int port = 8080;
