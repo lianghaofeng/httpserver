@@ -127,7 +127,16 @@ int HttpServer::createListenSocket() {
     // 设置SO_REUSEADDR，允许重用地址
     int opt = 1;
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        std::cerr << "setsockopt() error: " 
+        std::cerr << "SO_REUSEADDR error: " 
+            << strerror(errno) << std::endl;
+        close(sockfd);
+        return -1;
+    }
+
+    // 设置SO_REUSEPORT 多线程监听
+    int reuseport = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &reuseport, sizeof(reuseport)) < 0) {
+        std::cerr << "SO_REUSEPORT error: " 
             << strerror(errno) << std::endl;
         close(sockfd);
         return -1;
@@ -231,8 +240,11 @@ void HttpServer::handleNewConnection(){
 
         char client_ip[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, sizeof(client_ip));
+
+#ifdef DEBUG_LOG
         std::cout<<"New Connection: " << client_ip
             << ": " <<ntohs(client_addr.sin_port) << std::endl;
+#endif
 
         if(!setNonBlocking(client_fd)){
             close(client_fd);
@@ -278,8 +290,9 @@ void HttpServer::handleClient(int client_fd) {
 
         return;
     }
-
+#ifdef DEBUG_LOG
     std::cout << request.methodString() << " " << request.path() << std::endl;
+#endif
 
     HttpResponse response;
 
@@ -366,12 +379,19 @@ bool HttpServer::sendResponse(int fd, const std::string& response) {
     const char* data = response.c_str();
     size_t len = response.length();
 
+    int retry = 0;
+    const int MAX_RETRY = 100;
+
     while(total_sent < len) {
         ssize_t sent = write(fd, data + total_sent, len - total_sent);
         if(sent < 0){
             if(errno == EAGAIN || errno == EWOULDBLOCK){
                 // 缓冲区满，稍后重试
-                usleep(100);
+                // usleep(1000);
+                if(++retry > MAX_RETRY){
+                    return false;
+                }
+                std::this_thread::yield();
                 continue;
             }
 
@@ -437,7 +457,11 @@ std::string HttpServer::readFile(const std::string& filepath) {
 void HttpServer::closeConnection(int fd){
     removeFromEpoll(fd);
     close(fd);
+
+#ifdef DEBUG_LOG
     std::cout <<"Connection closed: fd = " << fd << std::endl;
+#endif
+
 }
 
 bool HttpServer::sendFileWithSendfile(int client_fd, const std::string& filepath, off_t file_size) {
@@ -449,6 +473,9 @@ bool HttpServer::sendFileWithSendfile(int client_fd, const std::string& filepath
 
     bool success = true;
 
+    int retry = 0;
+    const int MAX_RETRY = 100;
+
     off_t offset = 0;
     ssize_t sent = 0;
     while(offset < file_size){
@@ -457,7 +484,11 @@ bool HttpServer::sendFileWithSendfile(int client_fd, const std::string& filepath
         if(sent < 0){
             if(errno == EAGAIN || errno == EWOULDBLOCK) {
                 //发送缓冲区满，等待后重试
-                usleep(1000);
+                // usleep(1000);
+                if(++retry > MAX_RETRY){
+                    return false;
+                }
+                std::this_thread::yield();
                 continue;
             }
 

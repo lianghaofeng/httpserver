@@ -7,6 +7,9 @@
 // 控制是否使用work-stealing模式
 #define USE_WORK_STEALING
 
+// 控制是否DEBUG模式
+// #define DEBUG_LOG
+
 #ifdef USE_WORK_STEALING
 #include "work_stealing_pool.h"
 #else
@@ -130,7 +133,7 @@ class HttpServer {
     std::unique_ptr<ThreadPool> pool_;
 #endif
 
-    static const int MAX_EVENTS = 1024;
+    static const int MAX_EVENTS = 4096;
     static const int BUFFER_SIZE = 4096;
 
 };

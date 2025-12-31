@@ -313,3 +313,115 @@ Processing:   153 5722 1926.2   5987    8967
 Waiting:       38 3845 1880.7   3741    7902
 Total:       3283 9283 1376.4   9602   17299
 ```
+
+**例子8：wrk测试，持续60秒，25000并发（ab只支持20000并发**
+```bash
+/workspace/wrk/wrk -t 12 -c 25000 -d 60s --timeout 5s --latency http://localhost:8080/
+```
+
+```
+Running 1m test @ http://localhost:8080/
+  12 threads and 25000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   724.17ms  314.34ms   5.00s    75.54%
+    Req/Sec     2.82k   478.22     9.87k    84.19%
+  Latency Distribution
+     50%  712.52ms
+     75%  879.49ms
+     90%    1.07s 
+     99%    1.54s 
+  2005718 requests in 1.00m, 5.19GB read
+  Socket errors: connect 0, read 0, write 0, timeout 4294
+Requests/sec:  33375.82
+Transfer/sec:     88.36MB
+```
+
+**例子9：wrk测试，持续60秒，50000并发（ab只支持20000并发）**
+```bash
+/workspace/wrk/wrk -t 12 -c 50000 -d 60s --timeout 5s --latency http://localhost:8
+080/
+```
+
+```
+Running 1m test @ http://localhost:8080/
+  12 threads and 50000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.21s   505.77ms   2.86s    67.25%
+    Req/Sec     3.42k     2.14k   32.46k    91.13%
+  Latency Distribution
+     50%    1.26s 
+     75%    1.55s 
+     90%    1.81s 
+     99%    2.26s 
+  1833653 requests in 1.00m, 4.74GB read
+Requests/sec:  30509.38
+Transfer/sec:     80.77MB
+```
+
+**例子10：wrk测试，持续60秒，60000并发（ab只支持20000并发）**
+```bash
+/workspace/wrk/wrk -t 12 -c 60000 -d 60s --timeout 5s --latency http://localhost:8
+080/
+```
+
+```
+Running 1m test @ http://localhost:8080/
+  12 threads and 60000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.29s   629.11ms   2.90s    61.89%
+    Req/Sec     3.81k     2.79k   35.36k    91.93%
+  Latency Distribution
+     50%    1.35s 
+     75%    1.77s 
+     90%    2.09s 
+     99%    2.51s 
+  1719567 requests in 1.00m, 4.45GB read
+Requests/sec:  28612.65
+Transfer/sec:     75.75MB
+```
+
+**例子11：wrk测试，持续60秒，70000并发（ab只支持20000并发, connect error 5485 是因为可用测试端口只有约64500个）**
+```bash
+/workspace/wrk/wrk -t 12 -c 70000 -d 60s --timeout 5s --latency http://localhost:8
+080/
+```
+
+```
+Running 1m test @ http://localhost:8080/
+  12 threads and 70000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.27s   594.46ms   3.44s    62.41%
+    Req/Sec     4.35k     2.49k   21.07k    80.42%
+  Latency Distribution
+     50%    1.27s 
+     75%    1.71s 
+     90%    2.06s 
+     99%    2.66s 
+  1313944 requests in 1.00m, 3.40GB read
+  Socket errors: connect 5485, read 0, write 0, timeout 0
+Requests/sec:  21853.99
+Transfer/sec:     57.86MB
+```
+
+**例子12：非work stealing模式，wrk测试，持续60秒，70000并发（ab只支持20000并发, connect error 5485 是因为可用测试端口只有约64500个）**
+```bash
+/workspace/wrk/wrk -t 12 -c 70000 -d 60s --timeout 5s --latency http://localhost:8
+080/
+```
+
+```
+Running 1m test @ http://localhost:8080/
+  12 threads and 70000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     1.04s   582.15ms   1.88s    48.31%
+    Req/Sec     7.37k     7.32k   38.86k    79.57%
+  Latency Distribution
+     50%  999.83ms
+     75%    1.62s 
+     90%    1.74s 
+     99%    1.83s 
+  1416076 requests in 1.06m, 3.66GB read
+  Socket errors: connect 5485, read 0, write 0, timeout 0
+Requests/sec:  22211.53
+Transfer/sec:     58.80MB
+```
